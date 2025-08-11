@@ -1,13 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>mysterium.lol - Full 3D Build & Shoot Game</title>
-<link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <title>mysterium.lol</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; overflow: hidden; height: 100%; width: 100%;
+      background: #071017;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      user-select: none;
+    }
+    canvas {
+      display: block;
+    }
+    #instructions {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-<div id="game-container"></div>
-<script type="module" src="js/main.js"></script>
+  <div id="instructions">
+    Click to play (pointer lock enabled)<br/>
+    WASD + Space = Move + Jump<br/>
+    Left Click = Shoot / destroy blocks<br/>
+    Right Click = Place / remove blocks
+  </div>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
