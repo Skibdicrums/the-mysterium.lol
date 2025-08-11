@@ -19,7 +19,6 @@ let canJump = false;
 const keysPressed = {};
 
 const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
 
 const blocks = [];
 const blockSize = 2;
@@ -36,9 +35,14 @@ function init() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
+  renderer.outputEncoding = THREE.sRGBEncoding;
   document.body.appendChild(renderer.domElement);
 
   clock = new THREE.Clock();
+
+  // Helpers
+  const axesHelper = new THREE.AxesHelper(5);
+  scene.add(axesHelper);
 
   // Lighting
   const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
@@ -61,7 +65,7 @@ function init() {
   // Load player model
   const loader = new GLTFLoader();
   loader.load(
-    'models/player.glb',
+    '/models/player.glb',  // absolute path from root public folder
     (gltf) => {
       playerModel = gltf.scene;
       playerModel.scale.set(1.5, 1.5, 1.5);
@@ -89,8 +93,8 @@ function init() {
   controls = new PointerLockControls(camera, renderer.domElement);
   scene.add(controls.getObject());
 
-  // Start with camera a bit above floor
-  controls.getObject().position.set(0, 2, 5);
+  // Start with camera above floor, looking forward
+  controls.getObject().position.set(0, 2, 10);
 
   document.body.addEventListener('click', () => {
     controls.lock();
@@ -107,6 +111,11 @@ function init() {
   // Mouse buttons for shooting/building
   document.addEventListener('mousedown', onMouseDown);
 
+  // Prevent context menu on right click (for building)
+  window.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+  });
+
   window.addEventListener('resize', onWindowResize);
 }
 
@@ -117,7 +126,6 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-// Shoot raycast bullets on left click, place/remove blocks on right click
 function onMouseDown(event) {
   if (!controls.isLocked) return;
 
@@ -129,7 +137,6 @@ function onMouseDown(event) {
 }
 
 function shootBullet() {
-  // Raycast from camera forward
   const origin = controls.getObject().position.clone();
   const direction = new THREE.Vector3(0, 0, -1);
   direction.applyQuaternion(camera.quaternion);
@@ -149,20 +156,15 @@ function shootBullet() {
 }
 
 function toggleBlock() {
-  // Place block in front of camera at fixed distance or remove if block present
-
   const origin = controls.getObject().position.clone();
   const dir = new THREE.Vector3(0, 0, -1);
   dir.applyQuaternion(camera.quaternion);
 
-  // Position 5 units ahead
   const pos = origin.clone().add(dir.multiplyScalar(5));
-  pos.y = Math.floor(pos.y / blockSize) * blockSize + blockSize / 2; // snap to grid height
+  pos.y = Math.floor(pos.y / blockSize) * blockSize + blockSize / 2;
 
-  // Check if block already exists near pos
   for (const block of blocks) {
     if (block.position.distanceTo(pos) < 1) {
-      // Remove block
       scene.remove(block);
       blocks.splice(blocks.indexOf(block), 1);
       console.log('Block removed');
@@ -170,7 +172,6 @@ function toggleBlock() {
     }
   }
 
-  // Place new block
   const cubeGeo = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
   const cubeMat = new THREE.MeshStandardMaterial({ color: 0x228822 });
   const cube = new THREE.Mesh(cubeGeo, cubeMat);
@@ -213,17 +214,15 @@ function updateMovement(delta) {
   velocity.x += direction.x * moveSpeed * delta;
   velocity.z += direction.z * moveSpeed * delta;
 
-  // Simple gravity & jumping
+  // Gravity & jumping
   velocity.y -= gravity * delta;
 
-  // Ground collision
   if (controls.getObject().position.y <= 2) {
     velocity.y = 0;
     controls.getObject().position.y = 2;
     canJump = true;
   }
 
-  // Jump with Space
   if (canJump && keysPressed['Space']) {
     velocity.y = jumpVelocity;
     canJump = false;
@@ -233,14 +232,13 @@ function updateMovement(delta) {
   controls.getObject().position.y += velocity.y * delta;
   controls.getObject().position.z += velocity.z * delta;
 
-  // Move player model to follow camera horizontally
+  // Move player model with camera horizontally
   if (playerModel) {
     playerModel.position.set(
       controls.getObject().position.x,
-      controls.getObject().position.y - 2, // adjust for player height offset
+      controls.getObject().position.y - 2,
       controls.getObject().position.z
     );
-    // Rotate player to face camera direction on Y axis
     playerModel.rotation.y = camera.rotation.y;
   }
 }
