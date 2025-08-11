@@ -62,10 +62,17 @@ function init() {
   floor.position.y = 0;
   scene.add(floor);
 
+  // Debug red cube so you see something even if model fails
+  const cubeGeo = new THREE.BoxGeometry(2, 2, 2);
+  const cubeMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+  const cube = new THREE.Mesh(cubeGeo, cubeMat);
+  cube.position.set(0, 1, 0);
+  scene.add(cube);
+
   // Load player model
   const loader = new GLTFLoader();
   loader.load(
-    '/models/player.glb',  // absolute path from root public folder
+    '/models/player.glb',  // Adjust path if needed
     (gltf) => {
       playerModel = gltf.scene;
       playerModel.scale.set(1.5, 1.5, 1.5);
@@ -111,7 +118,7 @@ function init() {
   // Mouse buttons for shooting/building
   document.addEventListener('mousedown', onMouseDown);
 
-  // Prevent context menu on right click (for building)
+  // Prevent context menu on right click
   window.addEventListener('contextmenu', (e) => {
     e.preventDefault();
   });
@@ -214,7 +221,6 @@ function updateMovement(delta) {
   velocity.x += direction.x * moveSpeed * delta;
   velocity.z += direction.z * moveSpeed * delta;
 
-  // Gravity & jumping
   velocity.y -= gravity * delta;
 
   if (controls.getObject().position.y <= 2) {
@@ -232,7 +238,6 @@ function updateMovement(delta) {
   controls.getObject().position.y += velocity.y * delta;
   controls.getObject().position.z += velocity.z * delta;
 
-  // Move player model with camera horizontally
   if (playerModel) {
     playerModel.position.set(
       controls.getObject().position.x,
