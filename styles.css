@@ -1,0 +1,13 @@
+body,html {
+  margin:0; padding:0; overflow:hidden;
+  background: #071017;
+  color:#eee;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+#game-container {
+  width: 100vw;
+  height: 100vh;
+  touch-action: none;
+  position: relative;
+  user-select: none;
+}
